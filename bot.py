@@ -26,19 +26,34 @@ def calculate_calories(weight, height, age, gender, activity):
     return int(bmr * activity)
 
 def get_food_info(product_name):
-    url = f"https://world.openfoodfacts.org/cgi/search.pl"
-    params = {
-        "action": "process",
-        "search_terms": product_name,
-        "json": True,
-        "page_size": 1,
-    }
-    r = requests.get(url, params=params).json()
-    products = r.get("products")
-    if not products:
+    try:
+        url = "https://world.openfoodfacts.org/cgi/search.pl"
+        params = {
+            "action": "process",
+            "search_terms": product_name,
+            "json": 1,
+            "page_size": 1,
+        }
+
+        response = requests.get(url, params=params, timeout=5)
+
+        if response.status_code != 200:
+            return None
+
+        data = response.json()
+        products = data.get("products")
+
+        if not products:
+            return None
+
+        nutriments = products[0].get("nutriments", {})
+        kcal = nutriments.get("energy-kcal_100g")
+
+        return kcal
+
+    except Exception as e:
+        print("Ошибка API еды:", e)
         return None
-    product = products[0]
-    return product.get("nutriments", {}).get("energy-kcal_100g")
 
 # Команды бота
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -131,3 +146,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
