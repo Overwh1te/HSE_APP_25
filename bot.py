@@ -162,16 +162,28 @@ async def workout(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Калории должны быть числом 😕")
 
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    u = users.get(update.effective_user.id)
-    if not u:
+    user_id = update.effective_user.id
+
+    if user_id not in users:
         await update.message.reply_text("Сначала задай профиль: /profile")
         return
 
+    u = users[user_id]
+
+    water_norm = calculate_water(u["weight"], u["activity"])
+    cal_norm = calculate_calories(
+        u["weight"], u["height"], u["age"], u["gender"], u["activity"]
+    )
+
+    water_left = max(0, water_norm - u["water"])
+    calories_balance = u["food"] - u["burned"]
+
     await update.message.reply_text(
-        f"📊 Статус за день:\n\n"
-        f"💧 Вода: {u['water']} мл\n"
-        f"🍔 Калории: {u['food']} ккал\n"
-        f"🔥 Сожжено: {u['burned']} ккал"
+        f"📊 Прогресс за день:\n\n"
+        f"💧 Вода: {u['water']} / {water_norm} мл\n"
+        f"Осталось: {water_left} мл\n\n"
+        f"🔥 Калории: {calories_balance} / {cal_norm} ккал\n"
+        f"(съедено: {u['food']}, сожжено: {u['burned']})"
     )
 
 # Запуск
@@ -189,5 +201,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
