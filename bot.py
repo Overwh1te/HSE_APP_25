@@ -1,5 +1,6 @@
 import logging
 import requests
+import matplotlib.pyplot as plt
 from telegram import Update
 from telegram.ext import (
     ApplicationBuilder,
@@ -213,6 +214,42 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"(съедено: {calories_eaten}, сожжено: {calories_burned})\n\n"
         f"💡 Рекомендации:\n" + "\n".join(recommendations)
     )
+    
+async def graph(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+
+    if user_id not in users:
+        await update.message.reply_text("Сначала задай профиль: /profile")
+        return
+
+    water = users[user_id]["water_history"]
+    calories = users[user_id]["calorie_history"]
+
+    if not water and not calories:
+        await update.message.reply_text("Недостаточно данных для графиков")
+        return
+
+    if water:
+        plt.figure()
+        plt.plot(water)
+        plt.title("Прогресс воды")
+        plt.xlabel("Шаг")
+        plt.ylabel("Мл")
+        plt.savefig("water.png")
+        plt.close()
+
+        await update.message.reply_photo(photo=open("water.png", "rb"))
+
+    if calories:
+        plt.figure()
+        plt.plot(calories)
+        plt.title("Прогресс калорий")
+        plt.xlabel("Шаг")
+        plt.ylabel("Ккал")
+        plt.savefig("calories.png")
+        plt.close()
+
+        await update.message.reply_photo(photo=open("calories.png", "rb"))
 
 # Запуск
 def main():
@@ -224,11 +261,13 @@ def main():
     app.add_handler(CommandHandler("food", food))
     app.add_handler(CommandHandler("workout", workout))
     app.add_handler(CommandHandler("status", status))
+    app.add_handler(CommandHandler("graph", graph))
 
     app.run_polling()
 
 if __name__ == "__main__":
     main()
+
 
 
 
