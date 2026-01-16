@@ -95,28 +95,71 @@ async def profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Ошибка формата 😕")
 
 async def water(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    amount = int(context.args[0])
-    users[update.effective_user.id]["water"] += amount
-    await update.message.reply_text(f"💧 Добавлено {amount} мл воды")
+    user_id = update.effective_user.id
+
+    if user_id not in users:
+        await update.message.reply_text("Сначала задай профиль: /profile")
+        return
+
+    if not context.args:
+        await update.message.reply_text("Пример: /water 250")
+        return
+
+    try:
+        amount = int(context.args[0])
+        users[user_id]["water"] += amount
+        await update.message.reply_text(f"💧 Добавлено {amount} мл воды")
+    except:
+        await update.message.reply_text("Объём должен быть числом 😕")
 
 async def food(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+
+    if user_id not in users:
+        await update.message.reply_text("Сначала задай профиль: /profile")
+        return
+
+    if not context.args:
+        await update.message.reply_text("Пример: /food apple")
+        return
+
     product = " ".join(context.args)
     kcal = get_food_info(product)
 
     if kcal is None:
-        await update.message.reply_text("Не удалось найти продукт 😕")
+        kcal = 100  # среднее значение
+        users[user_id]["food"] += kcal
+
+        await update.message.reply_text(
+            f"🍔 {product}\n"
+            f"⚠️ Данные не найдены, использовано среднее значение: {kcal} ккал"
+        )
         return
 
-    users[update.effective_user.id]["food"] += kcal
+    users[user_id]["food"] += int(kcal)
+
     await update.message.reply_text(
         f"🍔 {product}\n"
-        f"≈ {kcal} ккал (на 100г)"
+        f"≈ {int(kcal)} ккал (на 100г)"
     )
 
 async def workout(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    calories = int(context.args[0])
-    users[update.effective_user.id]["burned"] += calories
-    await update.message.reply_text(f"🏃 Сожжено {calories} ккал")
+    user_id = update.effective_user.id
+
+    if user_id not in users:
+        await update.message.reply_text("Сначала задай профиль: /profile")
+        return
+
+    if not context.args:
+        await update.message.reply_text("Пример: /workout 300")
+        return
+
+    try:
+        calories = int(context.args[0])
+        users[user_id]["burned"] += calories
+        await update.message.reply_text(f"🏃 Сожжено {calories} ккал")
+    except:
+        await update.message.reply_text("Калории должны быть числом 😕")
 
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     u = users.get(update.effective_user.id)
@@ -146,4 +189,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
