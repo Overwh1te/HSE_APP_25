@@ -81,6 +81,8 @@ async def profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "water": 0,
             "food": 0,
             "burned": 0,
+            "water_history": [],
+            "calorie_history": [],
         }
 
         water_norm = calculate_water(weight, activity)
@@ -108,9 +110,11 @@ async def water(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         amount = int(context.args[0])
         users[user_id]["water"] += amount
+        users[user_id]["water_history"].append(users[user_id]["water"])
         await update.message.reply_text(f"💧 Добавлено {amount} мл воды")
     except:
         await update.message.reply_text("Объём должен быть числом 😕")
+
 
 async def food(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -137,6 +141,7 @@ async def food(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     users[user_id]["food"] += int(kcal)
+    users[user_id]["calorie_history"].append(users[user_id]["food"])
 
     await update.message.reply_text(
         f"🍔 {product}\n"
@@ -170,20 +175,43 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     u = users[user_id]
 
+    # Расчёт норм
     water_norm = calculate_water(u["weight"], u["activity"])
     cal_norm = calculate_calories(
         u["weight"], u["height"], u["age"], u["gender"], u["activity"]
     )
 
-    water_left = max(0, water_norm - u["water"])
-    calories_balance = u["food"] - u["burned"]
+    # Текущие значения
+    water_drunk = u["water"]
+    calories_eaten = u["food"]
+    calories_burned = u["burned"]
+    calories_balance = calories_eaten - calories_burned
 
+    # Прогресс
+    water_left = max(0, water_norm - water_drunk)
+
+    # Рекомендации
+    recommendations = []
+
+    if water_left > 0:
+        recommendations.append("💧 Рекомендуется выпить ещё воды.")
+
+    if calories_balance < cal_norm * 0.8:
+        recommendations.append("🍽 Можно немного поесть для набора калорий.")
+    elif calories_balance > cal_norm:
+        recommendations.append("🏃 Рекомендуется лёгкая тренировка.")
+
+    if not recommendations:
+        recommendations.append("✅ Вы отлично соблюдаете дневные нормы!")
+
+    # Ответ пользователю
     await update.message.reply_text(
         f"📊 Прогресс за день:\n\n"
-        f"💧 Вода: {u['water']} / {water_norm} мл\n"
+        f"💧 Вода: {water_drunk} / {water_norm} мл\n"
         f"Осталось: {water_left} мл\n\n"
         f"🔥 Калории: {calories_balance} / {cal_norm} ккал\n"
-        f"(съедено: {u['food']}, сожжено: {u['burned']})"
+        f"(съедено: {calories_eaten}, сожжено: {calories_burned})\n\n"
+        f"💡 Рекомендации:\n" + "\n".join(recommendations)
     )
 
 # Запуск
@@ -201,6 +229,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
