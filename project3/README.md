@@ -239,3 +239,15 @@ python-dotenv==1.0.0
 pydantic-settings==2.1.0
 apscheduler==3.10.4
 ```
+
+# Тестирование
+
+## Запуск всех тестов
+```bash
+python -m pytest tests/ -v
+```
+
+## Проверка покрытия кода
+```
+python -m pytest tests/ --cov=app --cov-report=term --cov-report=html
+```
