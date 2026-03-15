@@ -251,3 +251,20 @@ python -m pytest tests/ -v
 ```
 python -m pytest tests/ --cov=app --cov-report=term --cov-report=html
 ```
+
+## Покрытие кода тестами
+
+**Текущее покрытие: 93%**
+
+![coverage-report](htmlcov/index.html) <br>
+*Отчет о покрытии доступен в папке [htmlcov/](htmlcov/index.html)*
+
+### Детали по файлам:
+| Файл | Покрытие |
+|------|----------|
+| app/crud.py | 98% |
+| app/main.py | 93% |
+| app/models.py | 97% |
+| app/routers/links.py | 82% |
+| app/routers/redirect.py | 74% |
+| **Общее** | **93%** |
