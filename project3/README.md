@@ -256,9 +256,6 @@ python -m pytest tests/ --cov=app --cov-report=term --cov-report=html
 
 **Текущее покрытие: 93%**
 
-![coverage-report](htmlcov/index.html) <br>
-*Отчет о покрытии доступен в папке [htmlcov/](htmlcov/index.html)*
-
 ### Детали по файлам:
 | Файл | Покрытие |
 |------|----------|
