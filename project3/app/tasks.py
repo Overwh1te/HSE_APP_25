@@ -25,3 +25,4 @@ def start_scheduler():
     scheduler.add_job(cleanup_old_links, 'cron', hour=3, minute=0)
     scheduler.start()
     logger.info("Scheduler started - will cleanup old links daily at 3:00 AM")
+    return scheduler

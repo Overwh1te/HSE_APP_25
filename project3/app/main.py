@@ -12,7 +12,7 @@ models.Base.metadata.create_all(bind=engine)
 # Запускаем планировщик фоновых задач
 scheduler = start_scheduler()
 # Останавливаем планировщик при завершении приложения
-atexit.register(lambda: scheduler.shutdown())
+atexit.register(lambda: scheduler.shutdown(wait=False) if scheduler else None)
 
 app = FastAPI(
     title="URL Shortener Service",

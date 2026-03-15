@@ -12,7 +12,7 @@ class Link(Base):
     custom_alias = Column(String(50), unique=True, nullable=True)  # Кастомный alias (если есть)
     
     # Статистика
-    clicks = Column(Integer, default=0)  # Количество переходов
+    clicks = Column(Integer, default=0, nullable=False)  # Количество переходов
     created_at = Column(DateTime(timezone=True), server_default=func.now())  # Дата создания
     last_accessed = Column(DateTime(timezone=True), nullable=True)  # Дата последнего использования
     
@@ -21,15 +21,33 @@ class Link(Base):
     
     # Информация о пользователе
     user_id = Column(String(100), nullable=True)  # ID пользователя (для зарегистрированных)
-    is_active = Column(Boolean, default=True)  # Активна ли ссылка
+    is_active = Column(Boolean, default=True, nullable=False)  # Активна ли ссылка
+    
+    def __init__(self, **kwargs):
+        """Инициализатор для установки значений по умолчанию"""
+        super(Link, self).__init__(**kwargs)
+        if self.clicks is None:
+            self.clicks = 0
+        if self.is_active is None:
+            self.is_active = True
     
     def is_expired(self):
         """Проверяет, истекла ли ссылка"""
         if self.expires_at:
-            return datetime.datetime.now(datetime.timezone.utc) > self.expires_at
+            # Если expires_at без часового пояса, делаем его aware
+            if self.expires_at.tzinfo is None:
+                from datetime import timezone
+                expires_at_aware = self.expires_at.replace(tzinfo=timezone.utc)
+            else:
+                expires_at_aware = self.expires_at
+            
+            now = datetime.datetime.now(datetime.timezone.utc)
+            return now > expires_at_aware
         return False
     
     def click(self):
         """Увеличивает счетчик кликов и обновляет last_accessed"""
+        if self.clicks is None:
+            self.clicks = 0
         self.clicks += 1
-        self.last_accessed = func.now()
+        self.last_accessed = datetime.datetime.now(datetime.timezone.utc)

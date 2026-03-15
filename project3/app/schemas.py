@@ -8,10 +8,9 @@ class LinkBase(BaseModel):
 
 # Схема для создания ссылки
 class LinkCreate(LinkBase):
-    custom_alias: Optional[str] = Field(None, min_length=2, max_length=50, 
-                                        description="Кастомный alias (минимум 3 символа)")
-    expires_at: Optional[datetime] = Field(None, 
-                                          description="Дата истечения ссылки (ISO формат)")
+    original_url: HttpUrl
+    custom_alias: Optional[str] = Field(None, min_length=2, max_length=50)
+    expires_at: Optional[datetime] = Field(None)
 
 # Схема для ответа при создании
 class LinkResponse(LinkBase):
